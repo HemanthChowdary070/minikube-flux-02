@@ -1,9 +1,10 @@
-name: Deploy to Kubernetes
+name: Deploy to OpenShift
 
 on:
   push:
     branches:
-      - main 
+      - main  # Trigger deployment on push to the main branch
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,7 +21,14 @@ jobs:
           echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
           chmod 600 ~/.kube/config
 
-      # Verify that we are logged into the Kubernetes cluster
+      # Install OpenShift CLI
+      - name: Install OpenShift CLI
+        run: |
+          curl -L https://mirror.openshift.com/pub/openshift-v4/clients/oc/latest/linux/oc.tar.gz | tar -xz
+          sudo mv oc /usr/local/bin/
+          oc version
+
+      # Verify that we are logged into the OpenShift cluster
       - name: Verify Kubernetes context
         run: |
           kubectl config get-contexts
@@ -29,4 +37,4 @@ jobs:
       # Apply Kubernetes manifests
       - name: Apply Kubernetes manifests
         run: |
-          kubectl apply -f minikube/podinfo/deployments
+          kubectl apply -f clusters/openshift-cluster/flux-system/base
